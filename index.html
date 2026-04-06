@@ -6,41 +6,63 @@
   <title>My House / Reviews</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main id="app">
     <header id="hud">
       <div id="title">MY HOUSE / REVIEWS</div>
-      <div id="locationLabel"></div>
+      <div id="metaBar">
+        <div id="locationLabel"></div>
+        <div id="orientationLabel"></div>
+      </div>
     </header>
 
     <section id="sceneWrap">
-      <div id="scene" aria-live="polite">
-        <div class="ceiling"></div>
-        <div class="backwall">
-          <div id="backPlaques" class="plaques"></div>
-          <button id="forwardDoor" class="door hidden" type="button" aria-label="Go forward"></button>
+      <div id="sceneViewport">
+        <div id="transitionMask"></div>
+        <div id="scene">
+          <div class="ceiling"></div>
+          <div class="floor"></div>
+          <div class="corner-shadow left"></div>
+          <div class="corner-shadow right"></div>
+          <div class="baseboard left"></div>
+          <div class="baseboard right"></div>
+          <div class="baseboard back"></div>
+
+          <div class="wall leftwall">
+            <div id="leftDecor" class="decor"></div>
+            <div id="leftPlaques" class="plaques side"></div>
+            <button id="leftDoorHotspot" class="hotspot side hidden" type="button" aria-label="Go left"></button>
+          </div>
+
+          <div class="wall backwall">
+            <div id="backDecor" class="decor"></div>
+            <button id="forwardDoor" class="door hidden" type="button" aria-label="Go forward">
+              <span class="door-frame"></span>
+              <span class="door-label">ENTER</span>
+            </button>
+            <div id="backPlaques" class="plaques"></div>
+          </div>
+
+          <div class="wall rightwall">
+            <div id="rightDecor" class="decor"></div>
+            <div id="rightPlaques" class="plaques side"></div>
+            <button id="rightDoorHotspot" class="hotspot side hidden" type="button" aria-label="Go right"></button>
+          </div>
+
+          <div id="motionTrail"></div>
         </div>
-        <div class="leftwall">
-          <div id="leftPlaques" class="plaques side"></div>
-          <button id="leftDoor" class="door side hidden" type="button" aria-label="Go left"></button>
-        </div>
-        <div class="rightwall">
-          <div id="rightPlaques" class="plaques side"></div>
-          <button id="rightDoor" class="door side hidden" type="button" aria-label="Go right"></button>
-        </div>
-        <div class="floor"></div>
       </div>
     </section>
 
     <div id="ambientLabel"></div>
 
     <nav id="controls" aria-label="Navigation">
-      <button id="turnLeftBtn" type="button">turn left</button>
-      <button id="forwardBtn" type="button">forward</button>
-      <button id="turnRightBtn" type="button">turn right</button>
+      <button id="turnLeftBtn" type="button" aria-label="Turn left"><span>←</span></button>
+      <button id="forwardBtn" type="button" aria-label="Move forward"><span>↑</span></button>
+      <button id="turnRightBtn" type="button" aria-label="Turn right"><span>→</span></button>
     </nav>
   </main>
 

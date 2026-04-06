@@ -6,16 +6,22 @@ const reviewBody = document.getElementById('reviewBody');
 const closeReviewBtn = document.getElementById('closeReviewBtn');
 
 const locationLabel = document.getElementById('locationLabel');
+const orientationLabel = document.getElementById('orientationLabel');
 const ambientLabel = document.getElementById('ambientLabel');
 const scene = document.getElementById('scene');
+const transitionMask = document.getElementById('transitionMask');
 
 const backPlaques = document.getElementById('backPlaques');
 const leftPlaques = document.getElementById('leftPlaques');
 const rightPlaques = document.getElementById('rightPlaques');
 
+const backDecor = document.getElementById('backDecor');
+const leftDecor = document.getElementById('leftDecor');
+const rightDecor = document.getElementById('rightDecor');
+
 const forwardDoor = document.getElementById('forwardDoor');
-const leftDoor = document.getElementById('leftDoor');
-const rightDoor = document.getElementById('rightDoor');
+const leftDoorHotspot = document.getElementById('leftDoorHotspot');
+const rightDoorHotspot = document.getElementById('rightDoorHotspot');
 
 const turnLeftBtn = document.getElementById('turnLeftBtn');
 const turnRightBtn = document.getElementById('turnRightBtn');
@@ -24,63 +30,78 @@ const forwardBtn = document.getElementById('forwardBtn');
 const rooms = {
   foyer: {
     label: 'Foyer',
-    colors: { wall: '#73614f', side: '#5c4d41' },
+    colors: { wall: '#75624e', side: '#5f4f42', floor: '#261910', glow: 'rgba(255,228,175,0.15)' },
     ambience: 'entry',
-    exits: { north: 'lounge', east: 'hall', south: 'foyer', west: 'foyer' }
+    decor: { back: 'tall-frame', left: 'console', right: 'mirror' },
+    exits: { north: 'lounge', east: 'hall', south: null, west: null }
   },
   lounge: {
     label: 'Lounge',
-    colors: { wall: '#695749', side: '#56473d' },
+    colors: { wall: '#6a5848', side: '#54463b', floor: '#2c1f16', glow: 'rgba(255,220,180,0.14)' },
     ambience: 'soft hum',
-    exits: { south: 'foyer', east: 'study', north: 'impossible', west: 'lounge' }
+    decor: { back: 'sofa-lamp', left: 'bookshelf', right: 'frame' },
+    exits: { north: 'impossible', east: 'study', south: 'foyer', west: null }
   },
   hall: {
     label: 'Hall',
-    colors: { wall: '#5d5f69', side: '#4b4d55' },
+    colors: { wall: '#5d6069', side: '#4a4d57', floor: '#1f1712', glow: 'rgba(200,210,255,0.1)' },
     ambience: 'narrow passage',
-    exits: { west: 'foyer', north: 'bathroom', south: 'basement', east: 'hall' }
+    decor: { back: 'runner', left: 'frame', right: 'frame' },
+    exits: { north: 'bathroom', east: null, south: 'basement', west: 'foyer' }
   },
   study: {
     label: 'Study',
-    colors: { wall: '#634b44', side: '#513d37' },
+    colors: { wall: '#614943', side: '#4e3c36', floor: '#2a1a14', glow: 'rgba(255,219,180,0.12)' },
     ambience: 'paper and dust',
-    exits: { west: 'lounge', south: 'bedroom', north: 'impossible', east: 'study' }
+    decor: { back: 'desk', left: 'bookshelf', right: 'lamp' },
+    exits: { north: 'impossible', east: null, south: 'bedroom', west: 'lounge' }
   },
   bedroom: {
     label: 'Bedroom',
-    colors: { wall: '#49505b', side: '#3f454f' },
+    colors: { wall: '#4a515c', side: '#3f454e', floor: '#201710', glow: 'rgba(210,220,255,0.1)' },
     ambience: 'late rewatch',
-    exits: { north: 'study', east: 'bathroom', west: 'bedroom', south: 'basement' }
+    decor: { back: 'bed', left: 'frame', right: 'dresser' },
+    exits: { north: 'study', east: 'bathroom', south: 'basement', west: null }
   },
   bathroom: {
     label: 'Bathroom',
-    colors: { wall: '#56635d', side: '#46524d' },
+    colors: { wall: '#56645f', side: '#46534e', floor: '#171717', glow: 'rgba(205,255,240,0.1)' },
     ambience: 'tiles and echo',
-    exits: { west: 'bedroom', south: 'hall', north: 'impossible', east: 'bathroom' }
+    decor: { back: 'sink', left: 'mirror', right: 'cabinet' },
+    exits: { north: 'impossible', east: null, south: 'hall', west: 'bedroom' }
   },
   basement: {
     label: 'Basement',
-    colors: { wall: '#40352f', side: '#322923' },
+    colors: { wall: '#40352f', side: '#302721', floor: '#120d0b', glow: 'rgba(255,190,150,0.08)' },
     ambience: 'cold storage',
-    exits: { north: 'hall', east: 'impossible', south: 'basement', west: 'bedroom' }
+    decor: { back: 'shelves', left: 'boxes', right: 'pipe' },
+    exits: { north: 'hall', east: 'impossible', south: null, west: 'bedroom' }
   },
   impossible: {
     label: 'Impossible Room',
-    colors: { wall: '#31364f', side: '#252a3d' },
+    colors: { wall: '#313751', side: '#252a3d', floor: '#16131d', glow: 'rgba(170,190,255,0.12)' },
     ambience: 'this room should not fit here',
-    exits: { south: 'study', west: 'lounge', east: 'bathroom', north: 'foyer' }
+    decor: { back: 'double-door', left: 'frame', right: 'frame' },
+    exits: { north: 'foyer', east: 'bathroom', south: 'study', west: 'lounge' }
   }
 };
 
 const directions = ['north', 'east', 'south', 'west'];
+const directionLabels = {
+  north: 'facing north',
+  east: 'facing east',
+  south: 'facing south',
+  west: 'facing west'
+};
 
 let reviews = [];
-let state = {
+let roomAssignments = {};
+let isAnimating = false;
+
+const state = {
   room: 'foyer',
   facing: 'north'
 };
-
-let roomAssignments = {};
 
 function directionIndex(dir) {
   return directions.indexOf(dir);
@@ -91,14 +112,14 @@ function rotateDirection(dir, delta) {
   return directions[(i + delta + 4) % 4];
 }
 
-function relativeWallForFacing(currentFacing, targetDirection) {
-  const current = directionIndex(currentFacing);
+function wallForRelative(targetDirection) {
+  const current = directionIndex(state.facing);
   const target = directionIndex(targetDirection);
   const diff = (target - current + 4) % 4;
   if (diff === 0) return 'back';
   if (diff === 1) return 'right';
   if (diff === 3) return 'left';
-  return 'none';
+  return 'hidden';
 }
 
 function assignRoom(index, review) {
@@ -129,6 +150,80 @@ function distributeReviews() {
   });
 }
 
+function decorate(el, type) {
+  el.dataset.decor = type || '';
+  el.innerHTML = '';
+  const add = (cls, style = '') => {
+    const node = document.createElement('div');
+    node.className = `shape ${cls}`;
+    if (style) node.style.cssText = style;
+    el.appendChild(node);
+  };
+
+  switch (type) {
+    case 'tall-frame':
+      add('rect', 'left:14%;top:16%;width:18%;height:28%;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.15)');
+      break;
+    case 'console':
+      add('rect', 'left:16%;bottom:14%;width:46%;height:10%;background:rgba(0,0,0,.28)');
+      break;
+    case 'mirror':
+      add('oval', 'right:18%;top:18%;width:26%;height:22%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04)');
+      break;
+    case 'sofa-lamp':
+      add('rect', 'left:14%;bottom:12%;width:32%;height:14%;background:rgba(0,0,0,.24)');
+      add('rect', 'right:18%;bottom:12%;width:4%;height:26%;background:rgba(0,0,0,.22)');
+      add('oval', 'right:12%;bottom:35%;width:16%;height:10%;background:rgba(255,255,255,.05)');
+      break;
+    case 'bookshelf':
+      add('rect', 'left:14%;bottom:11%;width:26%;height:42%;background:rgba(0,0,0,.24)');
+      break;
+    case 'frame':
+      add('rect', 'left:24%;top:18%;width:22%;height:16%;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.16)');
+      break;
+    case 'runner':
+      add('rect', 'left:42%;bottom:12%;width:16%;height:54%;background:rgba(255,255,255,.04)');
+      break;
+    case 'desk':
+      add('rect', 'left:18%;bottom:12%;width:34%;height:12%;background:rgba(0,0,0,.24)');
+      add('rect', 'left:24%;bottom:24%;width:18%;height:8%;background:rgba(0,0,0,.18)');
+      break;
+    case 'lamp':
+      add('rect', 'right:18%;bottom:12%;width:4%;height:22%;background:rgba(0,0,0,.24)');
+      add('oval', 'right:12%;bottom:33%;width:16%;height:10%;background:rgba(255,255,255,.06)');
+      break;
+    case 'bed':
+      add('rect', 'left:16%;bottom:12%;width:44%;height:16%;background:rgba(0,0,0,.22)');
+      add('rect', 'left:18%;bottom:22%;width:20%;height:8%;background:rgba(255,255,255,.05)');
+      break;
+    case 'dresser':
+      add('rect', 'right:16%;bottom:12%;width:22%;height:24%;background:rgba(0,0,0,.22)');
+      break;
+    case 'sink':
+      add('rect', 'left:20%;bottom:12%;width:26%;height:16%;background:rgba(255,255,255,.05)');
+      add('rect', 'left:26%;bottom:28%;width:8%;height:5%;background:rgba(255,255,255,.05)');
+      break;
+    case 'cabinet':
+      add('rect', 'right:18%;top:18%;width:22%;height:28%;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.07)');
+      break;
+    case 'shelves':
+      add('rect', 'left:14%;bottom:12%;width:22%;height:42%;background:rgba(0,0,0,.24)');
+      add('rect', 'right:18%;bottom:12%;width:18%;height:38%;background:rgba(0,0,0,.2)');
+      break;
+    case 'boxes':
+      add('rect', 'left:18%;bottom:12%;width:22%;height:13%;background:rgba(0,0,0,.22)');
+      add('rect', 'left:28%;bottom:24%;width:18%;height:10%;background:rgba(0,0,0,.2)');
+      break;
+    case 'pipe':
+      add('rect', 'right:16%;top:0%;width:5%;height:65%;background:rgba(0,0,0,.22)');
+      break;
+    case 'double-door':
+      add('rect', 'left:30%;bottom:10%;width:16%;height:46%;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07)');
+      add('rect', 'left:48%;bottom:10%;width:16%;height:46%;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07)');
+      break;
+  }
+}
+
 function renderPlaque(review) {
   const button = document.createElement('button');
   button.className = 'plaque';
@@ -155,80 +250,107 @@ function renderPlaque(review) {
   return button;
 }
 
-function renderWall(container, items) {
+function renderWall(container, items, limit) {
   container.replaceChildren();
-  items.slice(0, container.classList.contains('side') ? 2 : 4).forEach((review) => {
-    container.appendChild(renderPlaque(review));
-  });
-}
-
-function updateDoors(room, facing) {
-  const config = rooms[room];
-  const frontDir = facing;
-  const leftDir = rotateDirection(facing, -1);
-  const rightDir = rotateDirection(facing, 1);
-
-  const frontRoom = config.exits[frontDir];
-  const leftRoomValue = config.exits[leftDir];
-  const rightRoomValue = config.exits[rightDir];
-
-  setDoor(forwardDoor, frontRoom && frontRoom !== room);
-  setDoor(leftDoor, leftRoomValue && leftRoomValue !== room);
-  setDoor(rightDoor, rightRoomValue && rightRoomValue !== room);
-
-  forwardDoor.onclick = () => move(frontDir);
-  leftDoor.onclick = () => move(leftDir);
-  rightDoor.onclick = () => move(rightDir);
-
-  forwardBtn.disabled = !(frontRoom && frontRoom !== room);
+  items.slice(0, limit).forEach((review) => container.appendChild(renderPlaque(review)));
 }
 
 function setDoor(el, visible) {
   el.classList.toggle('hidden', !visible);
 }
 
-function renderScene() {
+function playAnimation(name, callback) {
+  if (isAnimating) return;
+  isAnimating = true;
+  scene.classList.remove('anim-forward', 'anim-left', 'anim-right');
+  transitionMask.classList.remove('active');
+  void scene.offsetWidth;
+  scene.classList.add(name);
+  transitionMask.classList.add('active');
+  if (callback) callback();
+
+  window.setTimeout(() => {
+    scene.classList.remove(name);
+    transitionMask.classList.remove('active');
+    isAnimating = false;
+  }, name === 'anim-forward' ? 420 : 320);
+}
+
+function updateNavigation() {
+  const config = rooms[state.room];
+  const frontRoom = config.exits[state.facing];
+  const leftRoom = config.exits[rotateDirection(state.facing, -1)];
+  const rightRoom = config.exits[rotateDirection(state.facing, 1)];
+
+  setDoor(forwardDoor, Boolean(frontRoom));
+  setDoor(leftDoorHotspot, Boolean(leftRoom));
+  setDoor(rightDoorHotspot, Boolean(rightRoom));
+
+  forwardBtn.disabled = !frontRoom;
+}
+
+function applyRoomStyle() {
   const room = rooms[state.room];
   scene.style.setProperty('--wall-color', room.colors.wall);
   scene.style.setProperty('--side-color', room.colors.side);
+  scene.style.setProperty('--floor-color', room.colors.floor);
+  scene.style.setProperty('--glow-color', room.colors.glow);
 
-  locationLabel.textContent = `${room.label} / ${state.facing}`;
+  decorate(backDecor, room.decor.back);
+  decorate(leftDecor, room.decor.left);
+  decorate(rightDecor, room.decor.right);
+}
+
+function renderScene() {
+  const room = rooms[state.room];
+  applyRoomStyle();
+
+  locationLabel.textContent = room.label;
+  orientationLabel.textContent = directionLabels[state.facing];
   ambientLabel.textContent = room.ambience;
 
   const walls = roomAssignments[state.room] || { north: [], east: [], south: [], west: [] };
-  const frontWall = relativeWallForFacing(state.facing, 'north') === 'back' ? walls.north :
-                    relativeWallForFacing(state.facing, 'east') === 'back' ? walls.east :
-                    relativeWallForFacing(state.facing, 'south') === 'back' ? walls.south :
-                    walls.west;
 
-  const leftWall = relativeWallForFacing(state.facing, 'north') === 'left' ? walls.north :
-                   relativeWallForFacing(state.facing, 'east') === 'left' ? walls.east :
-                   relativeWallForFacing(state.facing, 'south') === 'left' ? walls.south :
-                   walls.west;
+  const frontDirection = state.facing;
+  const leftDirection = rotateDirection(state.facing, -1);
+  const rightDirection = rotateDirection(state.facing, 1);
 
-  const rightWall = relativeWallForFacing(state.facing, 'north') === 'right' ? walls.north :
-                    relativeWallForFacing(state.facing, 'east') === 'right' ? walls.east :
-                    relativeWallForFacing(state.facing, 'south') === 'right' ? walls.south :
-                    walls.west;
+  renderWall(backPlaques, walls[frontDirection] || [], 4);
+  renderWall(leftPlaques, walls[leftDirection] || [], 2);
+  renderWall(rightPlaques, walls[rightDirection] || [], 2);
 
-  renderWall(backPlaques, frontWall);
-  renderWall(leftPlaques, leftWall);
-  renderWall(rightPlaques, rightWall);
-
-  updateDoors(state.room, state.facing);
+  updateNavigation();
 }
 
-function move(direction) {
-  const nextRoom = rooms[state.room].exits[direction];
-  if (!nextRoom || nextRoom === state.room) return;
-  state.room = nextRoom;
-  state.facing = direction;
-  renderScene();
+function moveForward() {
+  if (isAnimating) return;
+  const nextRoom = rooms[state.room].exits[state.facing];
+  if (!nextRoom) return;
+  playAnimation('anim-forward', () => {
+    state.room = nextRoom;
+    renderScene();
+  });
 }
 
 function turn(delta) {
-  state.facing = rotateDirection(state.facing, delta);
-  renderScene();
+  if (isAnimating) return;
+  const anim = delta < 0 ? 'anim-left' : 'anim-right';
+  playAnimation(anim, () => {
+    state.facing = rotateDirection(state.facing, delta);
+    renderScene();
+  });
+}
+
+function strafe(delta) {
+  if (delta < 0) {
+    const next = rooms[state.room].exits[rotateDirection(state.facing, -1)];
+    if (!next) return;
+    turn(-1);
+  } else {
+    const next = rooms[state.room].exits[rotateDirection(state.facing, 1)];
+    if (!next) return;
+    turn(1);
+  }
 }
 
 function openReview(review) {
@@ -290,8 +412,12 @@ async function loadReviews() {
 
 turnLeftBtn.addEventListener('click', () => turn(-1));
 turnRightBtn.addEventListener('click', () => turn(1));
-forwardBtn.addEventListener('click', () => move(state.facing));
+forwardBtn.addEventListener('click', moveForward);
+forwardDoor.addEventListener('click', moveForward);
+leftDoorHotspot.addEventListener('click', () => strafe(-1));
+rightDoorHotspot.addEventListener('click', () => strafe(1));
 closeReviewBtn.addEventListener('click', closeReview);
+
 reviewPanel.addEventListener('click', (e) => {
   if (e.target === reviewPanel) closeReview();
 });
@@ -301,7 +427,7 @@ window.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (k === 'arrowleft' || k === 'a') turn(-1);
   if (k === 'arrowright' || k === 'd') turn(1);
-  if (k === 'arrowup' || k === 'w' || k === 'enter') move(state.facing);
+  if (k === 'arrowup' || k === 'w' || k === 'enter') moveForward();
   if (k === 'escape') closeReview();
 });
 
@@ -315,6 +441,7 @@ scene.addEventListener('touchstart', (e) => {
 }, { passive: true });
 
 scene.addEventListener('touchend', (e) => {
+  if (reviewPanel.classList.contains('visible')) return;
   const t = e.changedTouches[0];
   const dx = t.clientX - touchStartX;
   const dy = t.clientY - touchStartY;
@@ -323,7 +450,7 @@ scene.addEventListener('touchend', (e) => {
     if (dx > 0) turn(1);
     else turn(-1);
   } else if (Math.abs(dy) > 60 && dy < 0) {
-    move(state.facing);
+    moveForward();
   }
 }, { passive: true });
 

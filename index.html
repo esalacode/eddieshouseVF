@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>My House / Reviews</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+    <header id="hud">
+      <div id="title">MY HOUSE / REVIEWS</div>
+      <div id="locationLabel"></div>
+    </header>
+
+    <section id="sceneWrap">
+      <div id="scene" aria-live="polite">
+        <div class="ceiling"></div>
+        <div class="backwall">
+          <div id="backPlaques" class="plaques"></div>
+          <button id="forwardDoor" class="door hidden" type="button" aria-label="Go forward"></button>
+        </div>
+        <div class="leftwall">
+          <div id="leftPlaques" class="plaques side"></div>
+          <button id="leftDoor" class="door side hidden" type="button" aria-label="Go left"></button>
+        </div>
+        <div class="rightwall">
+          <div id="rightPlaques" class="plaques side"></div>
+          <button id="rightDoor" class="door side hidden" type="button" aria-label="Go right"></button>
+        </div>
+        <div class="floor"></div>
+      </div>
+    </section>
+
+    <div id="ambientLabel"></div>
+
+    <nav id="controls" aria-label="Navigation">
+      <button id="turnLeftBtn" type="button">turn left</button>
+      <button id="forwardBtn" type="button">forward</button>
+      <button id="turnRightBtn" type="button">turn right</button>
+    </nav>
+  </main>
+
+  <div id="reviewPanel" class="panel">
+    <div class="panel-inner reading">
+      <div class="reading-label">found text</div>
+      <h2 id="reviewFilm"></h2>
+      <div id="reviewMeta" class="small"></div>
+      <div id="reviewBody"></div>
+      <div class="panel-actions">
+        <button id="closeReviewBtn" type="button">close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "fallback-1",
+    "film": "Letterboxd feed unavailable",
+    "year": "",
+    "rating": "",
+    "room": "foyer",
+    "snippet": "The house loaded, but the live reviews did not.",
+    "body": "The house loaded, but the live Letterboxd reviews did not. On Netlify, this build is meant to pull from the configured username at runtime. If that request fails, the site falls back to cached reviews, then this local file."
+  },
+  {
+    "id": "fallback-2",
+    "film": "Tap to turn. Tap forward.",
+    "year": "",
+    "rating": "",
+    "room": "hall",
+    "snippet": "This version is mobile-first.",
+    "body": "This version is mobile-first. Turn with the left and right buttons or by swiping horizontally across the scene. Move forward with the centre button or by swiping upward."
+  }
+]
